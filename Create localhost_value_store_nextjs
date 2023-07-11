@@ -1,0 +1,148 @@
+"use client";
+import Header from "@/app/header/page"
+import Footer from "@/app/footer/page"
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Carousel from 'react-bootstrap/Carousel'
+import React, { useState, useEffect } from "react";
+
+export default function Product({ params }: any) {
+    const router = useRouter();
+    const [list, setList] = useState();
+    const [pdata, setPdata] = useState(null)
+    const [isLoading, setLoading] = useState(false)
+    const url = `https://dummyjson.com/products/` + params.id[0]
+    useEffect(() => {
+        setLoading(true)
+        fetch(url)
+            .then((res) => res.json())
+            .then((data) => {
+                setLoading(false)
+                setPdata(data)
+            })
+    }, [])
+    const imgHeight = {
+        "maxHeight": "500px"
+    }
+
+    if (isLoading) return <p>Loading...</p>
+    if (!pdata) return <p>No profile data</p>
+
+    const Storedata = (id: number) => {
+
+        if ((localStorage.getItem("listArray")) == null || undefined) {
+            let listArray = [];
+            const listdata = {
+                "id": Math.random().toString(),
+                "pid": id
+            }
+            listArray.push(listdata);
+            localStorage.setItem("listArray", JSON.stringify(listArray));
+        } else if (((localStorage.getItem("listArray")))) {
+            let listArray = JSON.parse(localStorage.getItem("listArray"));
+            const listdata = {
+                "id": Math.random().toString(),
+                "pid": id
+            }
+            listArray.push(listdata);
+            localStorage.setItem("listArray", JSON.stringify(listArray));
+        }
+
+
+
+
+    }
+    const Buynow = (id: any) => {
+        router.push(`/buynow/${id}`)
+    }
+
+
+    return (
+        <div >
+            <Header />
+            <h4 className="m-4 text-center">Product Page </h4>
+
+
+            <div className="row p-2">
+                <div className="col-lg-6">
+                    <div style={{ "width": "500px", "paddingLeft": "70px" }} >
+                        <Image className="card-img-top " src={pdata.images[0]} alt="Card image cap" width={1000}
+                            height={1000} />
+                    </div>
+                </div>
+                <div className="col-lg-6">
+                    <table className="table mt-5">
+                        <tbody>
+                            <tr>
+                                <td>Product Name :</td>
+                                <td>{pdata && pdata.title}</td>
+                            </tr>
+                            <tr>
+                                <td>Price :</td>
+                                <td>{pdata && pdata.price}</td>
+                            </tr>
+                            <tr>
+                                <td>Brand :</td>
+                                <td>{(pdata && pdata.brand)}</td>
+                            </tr>
+                            <tr>
+                                <td>Category :</td>
+                                <td>{(pdata && pdata.category)}</td>
+                            </tr>
+                            <tr>
+                                <td>Stock :</td>
+                                <td>{(pdata && pdata.stock)}</td>
+                            </tr>
+                            <tr>
+                                <td>User Rating :</td>
+                                <td>{(pdata && pdata.rating)}</td>
+                            </tr>
+                            <tr>
+                                <td><button className="btn btn-primary" onClick={() => { Storedata(pdata.id) }}> Add to Cart </button>  </td>
+                                <td>  <button className="btn btn-success" onClick={() => { Buynow(pdata.id) }} >  Buy Now </button> </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div className="row p-2 text-center">
+                <div className="col-lg-12">
+                    Description:{pdata.description}
+                </div>
+            </div>
+
+
+            <div>
+                <Carousel>
+                    {
+                        pdata.images && pdata.images.map((value, index) => {
+                            return (
+                                <Carousel.Item interval={1000} key={index}>
+                                    <Image
+                                        className="d-block w-100 "
+                                        src={pdata.images[index]}
+                                        alt=" image cap"
+                                        width={1000}
+                                        height={1000}
+                                        style={imgHeight} />
+
+                                </Carousel.Item>
+
+                            )
+                        })
+                    }
+
+
+                </Carousel>
+            </div>
+
+
+
+
+            <Footer />
+        </div>
+    )
+}
